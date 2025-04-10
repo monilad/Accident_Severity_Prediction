@@ -49,3 +49,5 @@ urllib3==2.3.0
 watchdog==6.0.0
 xgboost==3.0.0
 streamlit-option-menu
+matplotlib==3.7.1
+streamlit-ace==0.2.0
