@@ -1,0 +1,11 @@
+Year,Distance,Totalinjuries,Totalfatalities,Collisionmanner,Lightcondition,Weather,SurfaceCondition,Unittype_One,Gender_Drv1,Traveldirection_One,AlcoholUse_Drv1,DrugUse_Drv1,Unittype_Two,Gender_Drv2,Traveldirection_Two,AlcoholUse_Drv2,DrugUse_Drv2,Hour,Weekday,Month,Weekend,Rush_Hour,Hazardous_Road,Age_Group_Drv1,Age_Group_Drv2,Substance_Use,Junction_Category,Violation_Category_Drv1,Violation_Category_Drv2,Unitaction_Category_Two,Unitaction_Category_One
+2012,0,6,0,1,0,0,0,0,0,9,0,1,0,0,1,1,1,0,6,1,1,0,0,2,2,0,4,0,5,3,9
+2012,0,0,0,4,3,0,0,0,1,5,1,1,0,1,5,1,1,11,6,1,1,0,0,1,1,0,2,4,5,3,9
+2012,135.168,1,0,10,4,0,0,0,1,5,1,1,0,0,5,1,1,17,6,1,1,1,0,1,2,0,4,9,5,3,2
+2012,200.112,1,0,5,0,0,0,2,0,2,1,1,0,1,1,1,1,19,6,1,1,1,0,1,1,0,0,5,5,3,5
+2012,0,1,0,4,3,0,0,0,1,9,1,1,0,0,6,1,1,11,0,1,0,0,0,1,1,0,2,5,5,9,3
+2012,-528,0,0,1,3,0,0,0,0,4,1,1,0,0,1,1,1,12,0,1,0,0,0,2,2,0,0,5,5,3,5
+2012,323.136,0,0,10,3,0,0,0,1,5,1,1,0,0,5,1,1,14,0,1,0,0,0,2,1,0,2,7,5,3,2
+2012,0,1,0,1,0,0,0,0,0,1,1,1,0,1,7,1,1,18,0,1,0,1,0,0,1,0,4,5,5,9,3
+2012,0,2,0,4,0,0,0,0,0,7,1,1,0,0,1,1,1,19,0,1,0,1,0,2,2,0,6,5,5,3,9
+2012,0,0,0,4,0,0,0,0,0,1,1,1,0,1,2,1,1,20,0,1,0,0,0,2,2,0,4,5,5,3,9
