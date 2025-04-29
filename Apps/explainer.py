@@ -297,6 +297,8 @@ def show_shap_analysis(model, sample_data, scaler):
                         )
                         st.pyplot(plt)
                         plt.clf()  # Clear the figure
+
+               
                         
                     except Exception as e:
                         st.error(f"Error in force plot: {str(e)}")
@@ -316,10 +318,28 @@ def show_shap_analysis(model, sample_data, scaler):
                         
                         # Get sample values for waterfall plot
                         if len(shap_values.shape) == 3:  # Multi-class
-                            # For waterfall plot in multi-class, we need to use the specific format
-                            shap.plots.waterfall(shap_values[sample_index, :, class_idx], max_display=8)
+                            # For waterfall plot in multi-class, we need to be careful with feature names
+                            # Create a modified Explanation object with named features
+                            explanation = shap_values[sample_index, :, class_idx]
+                            # Modify the feature names directly in the explanation object
+                            explanation.feature_names = feature_names
+                            # Now plot with the modified explanation
+                            shap.plots.waterfall(
+                                explanation, 
+                                max_display=8,
+                                show=False
+                            )
                         else:
-                            shap.plots.waterfall(shap_values[sample_index], max_display=8)
+                            # Create a modified Explanation object with named features
+                            explanation = shap_values[sample_index]
+                            # Modify the feature names directly in the explanation object
+                            explanation.feature_names = feature_names
+                            # Now plot with the modified explanation
+                            shap.plots.waterfall(
+                                explanation, 
+                                max_display=8,
+                                show=False
+                            )
                             
                         st.pyplot(plt)
                         plt.clf()  # Clear the figure
@@ -381,9 +401,25 @@ def show_shap_analysis(model, sample_data, scaler):
                     
                     # Get sample values for waterfall plot
                     if len(shap_values.shape) == 3:  # Multi-class
-                        shap.plots.waterfall(shap_values[sample_index, :, class_idx], max_display=10)
+                        # Create a modified Explanation object with named features
+                        explanation = shap_values[sample_index, :, class_idx]
+                        # Modify the feature names directly in the explanation object
+                        explanation.feature_names = feature_names
+                        # Now plot with the modified explanation
+                        shap.plots.waterfall(
+                            explanation, 
+                            max_display=10
+                        )
                     else:
-                        shap.plots.waterfall(shap_values[sample_index], max_display=10)
+                        # Create a modified Explanation object with named features
+                        explanation = shap_values[sample_index]
+                        # Modify the feature names directly in the explanation object
+                        explanation.feature_names = feature_names
+                        # Now plot with the modified explanation
+                        shap.plots.waterfall(
+                            explanation, 
+                            max_display=10
+                        )
                         
                     st.pyplot(plt)
                     plt.clf()  # Clear the figure
@@ -440,6 +476,8 @@ def show_interactive_explanation(model, scaler):
         surface_map = {"Dry": 0, "Unknown": 1, "Wet": 2, "Others": 3, "Stagnant Water": 4}
         rush_map = {"No": 0, "Yes": 1}
         age_group_map = {"18-25": 2, "26-60": 1, "60+": 0}
+
+       
         
         # Create a default input dictionary with all required features
         input_dict = {
@@ -516,6 +554,9 @@ def show_interactive_explanation(model, scaler):
                 explainer = shap.Explainer(model)
                 shap_values = explainer(scaled_input)
                 
+                # Get feature names for proper labeling
+                feature_names = get_feature_names()
+                
                 # Show SHAP values for each class
                 st.write("### Feature Contribution to Prediction")
                 
@@ -544,22 +585,24 @@ def show_interactive_explanation(model, scaler):
                             try:
                                 plt.figure(figsize=(12, 4))
                                 
-                                # Use the newer SHAP force plot API
+                                # Use the newer SHAP force plot API with explicit feature names
                                 shap.plots.force(
                                     base_value, 
                                     class_shap_values, 
-                                    feature_names=get_feature_names(),
+                                    feature_names=feature_names,  # Explicitly pass feature names
                                     matplotlib=True,
                                     show=False
                                 )
                                 st.pyplot(plt)
                                 plt.clf()  # Clear figure
+
+                          
                             except Exception as e:
                                 st.error(f"Force plot error: {str(e)}")
                                 
                                 # Fallback visualization
                                 impact_df = pd.DataFrame({
-                                    'Feature': get_feature_names(),
+                                    'Feature': feature_names,
                                     'Impact': class_shap_values
                                 })
                                 impact_df['AbsImpact'] = abs(impact_df['Impact'])
@@ -583,12 +626,28 @@ def show_interactive_explanation(model, scaler):
                                 # Smaller figure size for interactive waterfall plot
                                 plt.figure(figsize=(8, 6))
                                 
-                                # Use the newer SHAP waterfall plot API with fewer features displayed
+                                # Use the newer SHAP waterfall plot API with modified explanation object
                                 if len(shap_values.shape) == 3:  # Multi-class
-                                    shap.plots.waterfall(shap_values[0, :, i], max_display=8)
+                                    # Create a modified Explanation object with named features
+                                    explanation = shap_values[0, :, i]
+                                    # Modify the feature names directly in the explanation object
+                                    explanation.feature_names = feature_names
+                                    # Now plot with the modified explanation
+                                    shap.plots.waterfall(
+                                        explanation, 
+                                        max_display=8
+                                    )
                                 else:
-                                    shap.plots.waterfall(shap_values[0], max_display=8)
-                                    
+                                    # Create a modified Explanation object with named features
+                                    explanation = shap_values[0]
+                                    # Modify the feature names directly in the explanation object
+                                    explanation.feature_names = feature_names
+                                    # Now plot with the modified explanation
+                                    shap.plots.waterfall(
+                                        explanation, 
+                                        max_display=8
+                                    )
+                                                                       
                                 st.pyplot(plt)
                                 plt.clf()  # Clear figure
                             except Exception as e:
