@@ -83,60 +83,6 @@ def get_feature_descriptions():
         'Unitaction_Category_One': 'Action category of first vehicle'
     }
 
-def show_feature_importance(model):
-    """Display feature importance from the model"""
-    st.subheader("Feature Importance")
-    
-    if model is None:
-        st.error("Model is not loaded. Cannot show feature importance.")
-        return
-    
-    # Get feature names and descriptions
-    feature_names = get_feature_names()
-    feature_descriptions = get_feature_descriptions()
-    
-    try:
-        importances = model.feature_importances_
-        # Sort features by importance
-        indices = np.argsort(importances)[::-1]
-        
-        # Create a DataFrame for the feature importance
-        importance_df = pd.DataFrame({
-            'Feature': [feature_names[i] for i in indices],
-            'Importance': [importances[i] for i in indices],
-            'Description': [feature_descriptions.get(feature_names[i], '') for i in indices]
-        })
-        
-        # Display the top 15 features
-        top_features = importance_df.head(15)
-        
-        # Create a horizontal bar chart with plotly
-        fig = px.bar(
-            top_features,
-            x='Importance',
-            y='Feature',
-            orientation='h',
-            title='Top 15 Features by Importance',
-            color='Importance',
-            color_continuous_scale='Viridis'
-        )
-        
-        # Add feature descriptions as hover text
-        fig.update_traces(
-            hovertemplate='<b>%{y}</b><br>Importance: %{x:.4f}<br>Description: %{text}<extra></extra>',
-            text=top_features['Description']
-        )
-        
-        fig.update_layout(height=600, yaxis={'categoryorder': 'total ascending'})
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Show the data table
-        with st.expander("View all feature importance data"):
-            st.dataframe(importance_df)
-            
-    except Exception as e:
-        st.error(f"Error calculating feature importance: {str(e)}")
-        st.code(traceback.format_exc())
 
 def create_feature_impact_chart(feature_names, shap_values, class_idx, sample_idx, severity_classes):
     """Create a fallback visualization when SHAP plots fail"""
@@ -698,15 +644,12 @@ def main():
         return
     
     # Create tabs for different explanation methods
-    tab1, tab2, tab3 = st.tabs(["Feature Importance", "SHAP Analysis", "Interactive Explanation"])
+    tab1, tab2 = st.tabs(["SHAP Analysis", "Interactive Explanation"])
     
     with tab1:
-        show_feature_importance(model)
-    
-    with tab2:
         show_shap_analysis(model, sample_data, scaler)
     
-    with tab3:
+    with tab2:
         show_interactive_explanation(model, scaler)
     
     # Add explanatory information at the bottom
