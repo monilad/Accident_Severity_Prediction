@@ -9,14 +9,244 @@ import shap
 import os
 import traceback
 
-# Set page config - only needed if this page is running standalone
-if "navigation" not in st.session_state:
-    st.set_page_config(
-        page_title="Final Accident Severity Explainer",
-        page_icon="💡",
-        layout="wide"
-    )
+# Custom CSS for explainer page
+st.markdown("""
+<style>
+    /* Base styling */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Main header styling */
+    .main-header {
+        color: #1E3A8A;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #E5E7EB;
+    }
+    
+    /* Sub header styling */
+    .sub-header {
+        color: #2563EB;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Card styling */
+    .card-container {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Info box styling */
+    .info-box {
+        background-color: #EFF6FF;
+        border-left: 4px solid #3B82F6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Detail box styling */
+    .detail-box {
+        background-color: #F9FAFB;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Section title */
+    .section-title {
+        color: #4B5563;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Feature info styling */
+    .feature-info {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-name {
+        width: 150px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #4B5563;
+    }
+    
+    .feature-value {
+        flex-grow: 1;
+        font-size: 0.9rem;
+        color: #1F2937;
+    }
+    
+    /* Tab container styling */
+    .stTabs {
+        background-color: white;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Custom tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+        background-color: #F1F5F9;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
 
+    .stTabs [data-baseweb="tab"] {
+        background-color: #ffffff;
+        border-radius: 0.375rem;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: #3B82F6;
+        color: white;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background-color: #2563EB;
+        color: white;
+        font-weight: 500;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.375rem;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    
+    .stButton > button:hover {
+        background-color: #1D4ED8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Chart container */
+    .chart-container {
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Legend styling */
+    .legend-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 9999px;
+        margin-right: 0.5rem;
+    }
+    
+    .legend-label {
+        font-size: 0.85rem;
+        color: #4B5563;
+    }
+    
+    /* Definition container */
+    .definition-box {
+        background-color: #F3F4F6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .definition-title {
+        color: #4B5563;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .definition-content {
+        color: #6B7280;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    /* Footer styling */
+    .footer {
+        text-align: center;
+        color: #6B7280;
+        font-size: 0.9rem;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E5E7EB;
+    }
+    
+    /* Error message styling */
+    .error-box {
+        background-color: #FEE2E2;
+        border-left: 4px solid #DC2626;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .warning-box {
+        background-color: #FEF3C7;
+        border-left: 4px solid #F59E0B;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .success-box {
+        background-color: #ECFDF5;
+        border-left: 4px solid #10B981;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Improve file uploader styling */
+    [data-testid="stFileUploader"] {
+        background-color: #F9FAFB;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px dashed #D1D5DB;
+    }
+    
+    /* Slider custom styling */
+    .stSlider > div > div > div {
+        background-color: #3B82F6;
+    }
+    
+    /* Labels for inputs */
+    label {
+        font-weight: 500;
+        color: #4B5563;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ORIGINAL FUNCTIONS FROM YOUR CODE
 def load_models_and_data():
     """Load the model, scaler, and sample data for explanations"""
     try:
@@ -30,7 +260,11 @@ def load_models_and_data():
         
         return model, scaler, sample_data
     except Exception as e:
-        st.error(f"Error loading model or data: {str(e)}")
+        st.markdown(f"""
+        <div class="error-box">
+            <p style="margin: 0; color: #991B1B;"><strong>Error loading model or data:</strong> {str(e)}</p>
+        </div>
+        """, unsafe_allow_html=True)
         return None, None, None
 
 def get_feature_names():
@@ -83,7 +317,6 @@ def get_feature_descriptions():
         'Unitaction_Category_One': 'Action category of first vehicle'
     }
 
-
 def create_feature_impact_chart(feature_names, shap_values, class_idx, sample_idx, severity_classes):
     """Create a fallback visualization when SHAP plots fail"""
     if len(shap_values.shape) == 3:  # Multi-class
@@ -104,43 +337,76 @@ def create_feature_impact_chart(feature_names, shap_values, class_idx, sample_id
     impact_df = impact_df.sort_values('AbsImpact', ascending=False).head(10)
     
     # Add color based on positive/negative impact
-    impact_df['Color'] = impact_df['Impact'].apply(lambda x: 'Positive' if x > 0 else 'Negative')
+    impact_df['Color'] = impact_df['Impact'].apply(lambda x: 'Positive Impact' if x > 0 else 'Negative Impact')
     
-    # Create the horizontal bar chart
+    # Create the horizontal bar chart with improved styling
     fig = px.bar(
         impact_df,
         x='Impact',
         y='Feature',
         orientation='h',
         color='Color',
-        color_discrete_map={'Positive': 'green', 'Negative': 'red'},
-        title=f'Top 10 Features by Impact on Prediction ({severity_classes[class_idx]})'
+        color_discrete_map={'Positive Impact': '#10B981', 'Negative Impact': '#EF4444'},
+        labels={'x': 'SHAP Impact Value', 'y': 'Feature'},
+        template="plotly_white"
     )
     
     # Improve layout
-    fig.update_layout(height=500, xaxis_title="SHAP Impact Value", yaxis_title="Feature")
+    fig.update_layout(
+        title=f'Top 10 Features by Impact on {severity_classes[class_idx]} Prediction',
+        title_x=0.5,
+        height=500,
+        xaxis_title="Impact on Prediction",
+        yaxis_title="Feature",
+        legend_title=None,
+        font=dict(family="Inter, sans-serif", size=12)
+    )
+    
+    # Add a vertical line at x=0
+    fig.add_shape(
+        type='line',
+        x0=0, y0=-0.5,
+        x1=0, y1=9.5,
+        line=dict(color='gray', width=1, dash='dash')
+    )
     
     return fig
 
 def show_shap_analysis(model, sample_data, scaler):
     """Display SHAP values for model interpretability with updates for SHAP v0.20+"""
-    st.subheader("SHAP Value Analysis")
+    st.markdown('<h2 class="sub-header">SHAP Value Analysis</h2>', unsafe_allow_html=True)
     
     if model is None:
-        st.error("Model is not loaded. Cannot perform SHAP analysis.")
+        st.markdown("""
+        <div class="error-box">
+            <p style="margin: 0; color: #991B1B;">Model is not loaded. Cannot perform SHAP analysis.</p>
+        </div>
+        """, unsafe_allow_html=True)
         return
     
     if sample_data is None:
-        st.warning("Sample data not available for SHAP analysis. Please upload a dataset.")
+        st.markdown("""
+        <div class="warning-box">
+            <p style="margin: 0; color: #92400E;">Sample data not available for SHAP analysis. Please upload a dataset.</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Option to upload data
         uploaded_file = st.file_uploader("Upload sample data for SHAP analysis (CSV)", type=['csv'])
         if uploaded_file is not None:
             try:
                 sample_data = pd.read_csv(uploaded_file)
-                st.success("Data uploaded successfully!")
+                st.markdown("""
+                <div class="success-box">
+                    <p style="margin: 0; color: #065F46;">Data uploaded successfully!</p>
+                </div>
+                """, unsafe_allow_html=True)
             except Exception as e:
-                st.error(f"Error loading data: {str(e)}")
+                st.markdown(f"""
+                <div class="error-box">
+                    <p style="margin: 0; color: #991B1B;"><strong>Error loading data:</strong> {str(e)}</p>
+                </div>
+                """, unsafe_allow_html=True)
                 return
         else:
             return
@@ -167,8 +433,62 @@ def show_shap_analysis(model, sample_data, scaler):
     sample_size = min(10, len(sample_data)) if sample_data is not None else 0
     if sample_size > 0:
         sample_index = st.selectbox("Select sample to explain:", range(sample_size))
+        
+        # Show sample details with improved styling
+        st.markdown('<div class="detail-box">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Sample Details</div>', unsafe_allow_html=True)
+        
+        # Get a subset of relevant features to display
+        key_features = [
+            'Totalinjuries', 'Totalfatalities', 'Lightcondition', 'Weather', 
+            'SurfaceCondition', 'Hour', 'Weekday', 'Month', 'Rush_Hour', 'Age_Group_Drv1'
+        ]
+        
+        # Create a mapping for categorical features to make them more readable
+        light_map_rev = {0: "Darklighted", 1: "Daylight", 2: "Dusk", 3: "Dawn", 4: "Dark not lighted", 5: "Unknown"}
+        weather_map_rev = {0: "Clear", 1: "Cloudy", 2: "Rain", 3: "Unknown", 4: "Others", 5: "Fog"}
+        surface_map_rev = {0: "Dry", 1: "Unknown", 2: "Wet", 3: "Others", 4: "Stagnant Water"}
+        weekday_map_rev = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
+        rush_map_rev = {0: "No", 1: "Yes"}
+        month_map_rev = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June", 
+                       7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
+        age_group_map_rev = {2: "18-25", 1: "26-60", 0: "60+"}
+        
+        # Display feature values
+        for feature in key_features:
+            feature_value = sample_data.iloc[sample_index][feature]
+            
+            # Map categorical features to human-readable values
+            if feature == 'Lightcondition' and feature_value in light_map_rev:
+                display_value = light_map_rev[feature_value]
+            elif feature == 'Weather' and feature_value in weather_map_rev:
+                display_value = weather_map_rev[feature_value]
+            elif feature == 'SurfaceCondition' and feature_value in surface_map_rev:
+                display_value = surface_map_rev[feature_value]
+            elif feature == 'Weekday' and feature_value in weekday_map_rev:
+                display_value = weekday_map_rev[feature_value]
+            elif feature == 'Rush_Hour' and feature_value in rush_map_rev:
+                display_value = rush_map_rev[feature_value]
+            elif feature == 'Month' and feature_value in month_map_rev:
+                display_value = month_map_rev[feature_value]
+            elif feature == 'Age_Group_Drv1' and feature_value in age_group_map_rev:
+                display_value = age_group_map_rev[feature_value]
+            elif feature == 'Hour':
+                display_value = f"{int(feature_value)}:00"
+            else:
+                display_value = feature_value
+            
+            # Display feature name and value
+            st.markdown(f"""
+            <div class="feature-info">
+                <div class="feature-name">{get_feature_descriptions().get(feature, feature)}</div>
+                <div class="feature-value">{display_value}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    # Analysis button    
+    # Analysis button with improved styling
     if st.button("Generate SHAP Analysis"):
         with st.spinner("Calculating SHAP values... This may take a moment."):
             try:
@@ -187,8 +507,12 @@ def show_shap_analysis(model, sample_data, scaler):
                 st.session_state.shap_calculated = True
                 
                 # SHAP summary plot showing impact for each class
-                st.write(f"### SHAP Summary Plot")
-                st.write("This plot shows how each feature impacts the model prediction across all samples.")
+                st.markdown('<h3 class="sub-header">SHAP Summary Plot</h3>', unsafe_allow_html=True)
+                st.markdown("""
+                <div class="info-box">
+                    <p style="margin: 0;">This plot shows how each feature impacts the model prediction across all samples.</p>
+                </div>
+                """, unsafe_allow_html=True)
                 
                 try:
                     # Create the summary plot with a smaller figure size
@@ -209,12 +533,16 @@ def show_shap_analysis(model, sample_data, scaler):
                     plt.clf()  # Clear the figure for next plot
                     
                 except Exception as e:
-                    st.error(f"Error creating summary plot: {str(e)}")
+                    st.markdown(f"""
+                    <div class="error-box">
+                        <p style="margin: 0; color: #991B1B;"><strong>Error creating summary plot:</strong> {str(e)}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                     st.code(traceback.format_exc())
                 
                 # Force plot for a specific sample
                 if sample_size > 0:
-                    st.write(f"### Sample {sample_index} Force Plot for {severity_classes[class_idx]}")
+                    st.markdown(f'<h3 class="sub-header">Sample {sample_index} Force Plot for {severity_classes[class_idx]}</h3>', unsafe_allow_html=True)
                     
                     try:
                         # Get expected value(s)
@@ -243,20 +571,22 @@ def show_shap_analysis(model, sample_data, scaler):
                         )
                         st.pyplot(plt)
                         plt.clf()  # Clear the figure
-
-               
                         
                     except Exception as e:
-                        st.error(f"Error in force plot: {str(e)}")
+                        st.markdown(f"""
+                        <div class="error-box">
+                            <p style="margin: 0; color: #991B1B;"><strong>Error in force plot:</strong> {str(e)}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         # Create a fallback visualization
-                        st.write("#### Feature Impact Chart (Alternative to Force Plot)")
+                        st.markdown('<h4 class="sub-header">Feature Impact Chart (Alternative to Force Plot)</h4>', unsafe_allow_html=True)
                         fig = create_feature_impact_chart(feature_names, shap_values, class_idx, sample_index, severity_classes)
                         st.plotly_chart(fig)
                 
                 # Waterfall plot for the selected sample and class
                 if sample_size > 0:
-                    st.write(f"### Waterfall Plot for Sample {sample_index}, {severity_classes[class_idx]}")
+                    st.markdown(f'<h3 class="sub-header">Waterfall Plot for Sample {sample_index}, {severity_classes[class_idx]}</h3>', unsafe_allow_html=True)
                     
                     try:
                         # Use smaller figure size for waterfall plot
@@ -291,14 +621,22 @@ def show_shap_analysis(model, sample_data, scaler):
                         plt.clf()  # Clear the figure
                         
                     except Exception as e:
-                        st.error(f"Error generating waterfall plot: {str(e)}")
+                        st.markdown(f"""
+                        <div class="error-box">
+                            <p style="margin: 0; color: #991B1B;"><strong>Error generating waterfall plot:</strong> {str(e)}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         # Fallback visualization
-                        st.write("#### Feature Impact Chart (Alternative to Waterfall Plot)")
+                        st.markdown('<h4 class="sub-header">Feature Impact Chart (Alternative to Waterfall Plot)</h4>', unsafe_allow_html=True)
                         # We already created this above, so we don't need to create it again
                 
             except Exception as e:
-                st.error(f"Error in SHAP analysis: {str(e)}")
+                st.markdown(f"""
+                <div class="error-box">
+                    <p style="margin: 0; color: #991B1B;"><strong>Error in SHAP analysis:</strong> {str(e)}</p>
+                </div>
+                """, unsafe_allow_html=True)
                 st.code(traceback.format_exc())
     
     # If SHAP values have been calculated previously and we have a valid sample index
@@ -314,7 +652,7 @@ def show_shap_analysis(model, sample_data, scaler):
                 expected_value = explainer.expected_value
                 
                 # Force plot
-                st.write(f"### Sample {sample_index} Force Plot for {severity_classes[class_idx]}")
+                st.markdown(f'<h3 class="sub-header">Sample {sample_index} Force Plot for {severity_classes[class_idx]}</h3>', unsafe_allow_html=True)
                 
                 try:
                     # Handle different formats of expected_value
@@ -342,7 +680,7 @@ def show_shap_analysis(model, sample_data, scaler):
                     plt.clf()  # Clear the figure
                     
                     # Waterfall plot
-                    st.write(f"### Waterfall Plot for Sample {sample_index}, {severity_classes[class_idx]}")
+                    st.markdown(f'<h3 class="sub-header">Waterfall Plot for Sample {sample_index}, {severity_classes[class_idx]}</h3>', unsafe_allow_html=True)
                     plt.figure(figsize=(10, 8))
                     
                     # Get sample values for waterfall plot
@@ -354,7 +692,8 @@ def show_shap_analysis(model, sample_data, scaler):
                         # Now plot with the modified explanation
                         shap.plots.waterfall(
                             explanation, 
-                            max_display=10
+                            max_display=10,
+                            show=False
                         )
                     else:
                         # Create a modified Explanation object with named features
@@ -364,34 +703,71 @@ def show_shap_analysis(model, sample_data, scaler):
                         # Now plot with the modified explanation
                         shap.plots.waterfall(
                             explanation, 
-                            max_display=10
+                            max_display=10,
+                            show=False
                         )
                         
                     st.pyplot(plt)
                     plt.clf()  # Clear the figure
                     
                 except Exception as e:
-                    st.error(f"Error showing explanation: {str(e)}")
+                    st.markdown(f"""
+                    <div class="error-box">
+                        <p style="margin: 0; color: #991B1B;"><strong>Error showing explanation:</strong> {str(e)}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                     
                     # Create a fallback visualization
-                    st.write("#### Feature Impact Chart (Alternative Visualization)")
+                    st.markdown('<h4 class="sub-header">Feature Impact Chart (Alternative Visualization)</h4>', unsafe_allow_html=True)
                     fig = create_feature_impact_chart(feature_names, shap_values, class_idx, sample_index, severity_classes)
                     st.plotly_chart(fig)
                 
             except Exception as e:
-                st.error(f"Error showing explanation: {str(e)}")
+                st.markdown(f"""
+                <div class="error-box">
+                    <p style="margin: 0; color: #991B1B;"><strong>Error showing explanation:</strong> {str(e)}</p>
+                </div>
+                """, unsafe_allow_html=True)
                 st.code(traceback.format_exc())
+
+    # Add explanatory information about SHAP values
+    st.markdown("""
+    <div class="definition-box">
+        <div class="definition-title">How to Interpret SHAP Values</div>
+        <div class="definition-content">
+            <p>SHAP values explain the impact of each feature on a single prediction:</p>
+            <ul>
+                <li><strong>Positive values (green/right)</strong> push the prediction toward a particular severity class</li>
+                <li><strong>Negative values (red/left)</strong> push the prediction away from a particular severity class</li>
+                <li>The <strong>base value</strong> represents the average model output over the training dataset</li>
+                <li>The <strong>sum of all SHAP values</strong> plus the base value equals the model's prediction for that instance</li>
+            </ul>
+            <p>SHAP values are based on game theory and provide consistent, locally accurate feature attributions.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 def show_interactive_explanation(model, scaler):
     """Show an interactive explanation interface where users can input values and see predictions"""
-    st.subheader("Interactive Feature Analysis")
+    st.markdown('<h2 class="sub-header">Interactive Feature Analysis</h2>', unsafe_allow_html=True)
     
     if model is None:
-        st.error("Model is not loaded. Cannot perform interactive analysis.")
+        st.markdown("""
+        <div class="error-box">
+            <p style="margin: 0; color: #991B1B;">Model is not loaded. Cannot perform interactive analysis.</p>
+        </div>
+        """, unsafe_allow_html=True)
         return
     
     try:
-        st.write("Adjust the features below to see how they affect the prediction:")
+        st.markdown("""
+        <div class="info-box">
+            <p style="margin: 0;">Adjust the features below to see how they affect the prediction:</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Create a card container for the interactive controls
+        st.markdown('<div class="card-container">', unsafe_allow_html=True)
         
         # Create columns for inputs
         col1, col2 = st.columns(2)
@@ -416,14 +792,14 @@ def show_interactive_explanation(model, scaler):
                                            ["Dry", "Wet", "Unknown", "Others", "Stagnant Water"],
                                            index=0)
         
+        st.markdown('</div>', unsafe_allow_html=True)
+        
         # Mappings
         light_map = {"Darklighted": 0, "Daylight": 1, "Dusk": 2, "Dawn": 3, "Dark not lighted": 4, "Unknown": 5}
         weather_map = {"Clear": 0, "Cloudy": 1, "Rain": 2, "Unknown": 3, "Others": 4, "Fog": 5}
         surface_map = {"Dry": 0, "Unknown": 1, "Wet": 2, "Others": 3, "Stagnant Water": 4}
         rush_map = {"No": 0, "Yes": 1}
         age_group_map = {"18-25": 2, "26-60": 1, "60+": 0}
-
-       
         
         # Create a default input dictionary with all required features
         input_dict = {
@@ -476,24 +852,52 @@ def show_interactive_explanation(model, scaler):
             severity_map = {0: "Fatal", 1: "Major Injury", 2: "Minor Injury", 3: "No Injury"}
             severity = severity_map[prediction]
             
-            # Display prediction
-            st.success(f"Predicted Severity: **{severity}**")
+            # Display prediction with nice styling
+            st.markdown(f"""
+            <div class="success-box">
+                <p style="margin: 0; color: #065F46; font-size: 1.2rem; font-weight: 600;">Predicted Severity: <span style="font-size: 1.4rem;">{severity}</span></p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            # Show probability distribution
-            prob_df = pd.DataFrame({
-                'Severity': list(severity_map.values()),
-                'Probability': probabilities
-            })
+            # Show probability distribution with improved styling
+            st.markdown('<h3 class="sub-header">Prediction Probability Distribution</h3>', unsafe_allow_html=True)
             
+            # Create color map for severity classes
+            color_map = {
+                "Fatal": "#DC2626",
+                "Major Injury": "#F59E0B",
+                "Minor Injury": "#2563EB",
+                "No Injury": "#10B981"
+            }
+            
+            # Create a better-looking chart
             fig = px.bar(
-                prob_df,
-                x='Severity',
-                y='Probability',
-                title='Prediction Probability Distribution',
-                color='Severity',
-                color_discrete_sequence=px.colors.qualitative.Set1
+                x=list(severity_map.values()),
+                y=probabilities,
+                color=list(severity_map.values()),
+                color_discrete_map=color_map,
+                labels={'x': 'Severity Level', 'y': 'Probability'},
+                template="plotly_white"
             )
-            st.plotly_chart(fig)
+            
+            fig.update_layout(
+                title="Probability Distribution by Severity Class",
+                title_x=0.5,
+                xaxis_title="Severity Level",
+                yaxis_title="Probability",
+                yaxis_range=[0, 1],
+                showlegend=False,
+                height=400,
+                font=dict(family="Inter, sans-serif")
+            )
+            
+            # Add value labels on top of bars
+            fig.update_traces(
+                texttemplate='%{y:.1%}',
+                textposition='outside'
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
             
             # Calculate SHAP values for this input
             try:
@@ -504,9 +908,9 @@ def show_interactive_explanation(model, scaler):
                 feature_names = get_feature_names()
                 
                 # Show SHAP values for each class
-                st.write("### Feature Contribution to Prediction")
+                st.markdown('<h3 class="sub-header">Feature Contribution to Prediction</h3>', unsafe_allow_html=True)
                 
-                # Tabs for different classes
+                # Tabs for different classes with improved styling
                 class_tabs = st.tabs([f"Class {i} ({severity_map[i]})" for i in range(len(severity_map))])
                 
                 for i, tab in enumerate(class_tabs):
@@ -526,7 +930,7 @@ def show_interactive_explanation(model, scaler):
                                 class_shap_values = shap_values.values[0, :]
                             
                             # Force plot
-                            st.write(f"#### Force Plot for {severity_map[i]}")
+                            st.markdown(f'<h4 class="sub-header">Force Plot for {severity_map[i]}</h4>', unsafe_allow_html=True)
                             
                             try:
                                 plt.figure(figsize=(12, 4))
@@ -544,16 +948,20 @@ def show_interactive_explanation(model, scaler):
 
                           
                             except Exception as e:
-                                st.error(f"Force plot error: {str(e)}")
+                                st.markdown(f"""
+                                <div class="error-box">
+                                    <p style="margin: 0; color: #991B1B;"><strong>Force plot error:</strong> {str(e)}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
                                 
-                                # Fallback visualization
+                                # Fallback visualization with improved styling
                                 impact_df = pd.DataFrame({
                                     'Feature': feature_names,
                                     'Impact': class_shap_values
                                 })
                                 impact_df['AbsImpact'] = abs(impact_df['Impact'])
                                 impact_df = impact_df.sort_values('AbsImpact', ascending=False).head(10)
-                                impact_df['Color'] = impact_df['Impact'].apply(lambda x: 'Positive' if x > 0 else 'Negative')
+                                impact_df['Color'] = impact_df['Impact'].apply(lambda x: 'Positive Impact' if x > 0 else 'Negative Impact')
                                 
                                 fig = px.bar(
                                     impact_df,
@@ -561,13 +969,21 @@ def show_interactive_explanation(model, scaler):
                                     y='Feature',
                                     orientation='h',
                                     color='Color',
-                                    color_discrete_map={'Positive': 'green', 'Negative': 'red'},
+                                    color_discrete_map={'Positive Impact': '#10B981', 'Negative Impact': '#EF4444'},
                                     title=f'Top 10 Features Impact on {severity_map[i]} Prediction'
                                 )
+                                
+                                fig.update_layout(
+                                    height=500,
+                                    xaxis_title="Impact Value",
+                                    yaxis_title="Feature",
+                                    font=dict(family="Inter, sans-serif")
+                                )
+                                
                                 st.plotly_chart(fig)
                             
                             # Waterfall plot
-                            st.write(f"#### Waterfall Plot for {severity_map[i]}")
+                            st.markdown(f'<h4 class="sub-header">Waterfall Plot for {severity_map[i]}</h4>', unsafe_allow_html=True)
                             try:
                                 # Smaller figure size for interactive waterfall plot
                                 plt.figure(figsize=(8, 6))
@@ -581,7 +997,8 @@ def show_interactive_explanation(model, scaler):
                                     # Now plot with the modified explanation
                                     shap.plots.waterfall(
                                         explanation, 
-                                        max_display=8
+                                        max_display=8,
+                                        show=False
                                     )
                                 else:
                                     # Create a modified Explanation object with named features
@@ -591,42 +1008,76 @@ def show_interactive_explanation(model, scaler):
                                     # Now plot with the modified explanation
                                     shap.plots.waterfall(
                                         explanation, 
-                                        max_display=8
+                                        max_display=8,
+                                        show=False
                                     )
                                                                        
                                 st.pyplot(plt)
                                 plt.clf()  # Clear figure
                             except Exception as e:
-                                st.error(f"Waterfall plot error: {str(e)}")
+                                st.markdown(f"""
+                                <div class="error-box">
+                                    <p style="margin: 0; color: #991B1B;"><strong>Waterfall plot error:</strong> {str(e)}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
                                 # Fallback already handled above
                                 
                         except Exception as e:
-                            st.error(f"Error showing explanation for class {i}: {str(e)}")
+                            st.markdown(f"""
+                            <div class="error-box">
+                                <p style="margin: 0; color: #991B1B;"><strong>Error showing explanation for class {i}:</strong> {str(e)}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
                 
             except Exception as e:
-                st.error(f"Error generating SHAP explanation: {str(e)}")
+                st.markdown(f"""
+                <div class="error-box">
+                    <p style="margin: 0; color: #991B1B;"><strong>Error generating SHAP explanation:</strong> {str(e)}</p>
+                </div>
+                """, unsafe_allow_html=True)
                 st.code(traceback.format_exc())
     
     except Exception as e:
-        st.error(f"Error in interactive explanation: {str(e)}")
+        st.markdown(f"""
+        <div class="error-box">
+            <p style="margin: 0; color: #991B1B;"><strong>Error in interactive explanation:</strong> {str(e)}</p>
+        </div>
+        """, unsafe_allow_html=True)
         st.code(traceback.format_exc())
 
 def main():
-    st.title("🔍 Final Explainable AI for Accident Severity Prediction")
-    st.write("""
-    This tool helps you understand how our machine learning model makes predictions about accident severity.
-    Use the tabs below to explore different aspects of the model's decision-making process.
-    """)
+    st.markdown('<h1 class="main-header">🔍 Explainable AI for Accident Severity Prediction</h1>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box">
+        <p>This tool helps you understand how our machine learning model makes predictions about accident severity.
+        Use the tabs below to explore different aspects of the model's decision-making process.</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Load the model and data
     model, scaler, sample_data = load_models_and_data()
     
     if model is None:
-        st.error("Failed to load the model. Please check that the model files (best_xgb_model.pkl and scaler.pkl) are available in the same directory as this script.")
-        st.info("You can upload model files below:")
+        st.markdown("""
+        <div class="error-box">
+            <p style="margin: 0; color: #991B1B;"><strong>Failed to load the model.</strong> Please check that the model files (best_xgb_model.pkl and scaler.pkl) are available in the same directory as this script.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="info-box">
+            <p style="margin: 0;">You can upload model files below:</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Create a card container for the file uploads
+        st.markdown('<div class="card-container">', unsafe_allow_html=True)
         
         model_file = st.file_uploader("Upload model file (best_xgb_model.pkl)", type=['pkl'])
         scaler_file = st.file_uploader("Upload scaler file (scaler.pkl)", type=['pkl'])
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
         if model_file and scaler_file:
             try:
@@ -636,14 +1087,22 @@ def main():
                 with open('scaler.pkl', 'wb') as f:
                     f.write(scaler_file.getbuffer())
                     
-                st.success("Files uploaded successfully! Please refresh the page.")
+                st.markdown("""
+                <div class="success-box">
+                    <p style="margin: 0; color: #065F46;"><strong>Files uploaded successfully!</strong> Please refresh the page.</p>
+                </div>
+                """, unsafe_allow_html=True)
                 model, scaler, _ = load_models_and_data()
             except Exception as e:
-                st.error(f"Error saving files: {str(e)}")
+                st.markdown(f"""
+                <div class="error-box">
+                    <p style="margin: 0; color: #991B1B;"><strong>Error saving files:</strong> {str(e)}</p>
+                </div>
+                """, unsafe_allow_html=True)
         
         return
     
-    # Create tabs for different explanation methods
+    # Create tabs for different explanation methods with improved styling
     tab1, tab2 = st.tabs(["SHAP Analysis", "Interactive Explanation"])
     
     with tab1:
@@ -652,16 +1111,28 @@ def main():
     with tab2:
         show_interactive_explanation(model, scaler)
     
-    # Add explanatory information at the bottom
+    # Add explanatory information at the bottom with improved styling
     st.markdown("""
-    ### Understanding Model Interpretability
+    <div class="definition-box">
+        <div class="definition-title">Understanding Model Interpretability</div>
+        <div class="definition-content">
+            <ul>
+                <li><strong>Feature Importance:</strong> Shows which features have the greatest impact on predictions across all data.</li>
+                <li><strong>SHAP Analysis:</strong> Shows how each feature contributes to individual predictions using game theory principles.</li>
+                <li><strong>Interactive Explanation:</strong> Lets you explore how changing input values affects predictions.</li>
+            </ul>
+            <p>These tools help make the 'black box' of machine learning more transparent and understandable.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    - **Feature Importance**: Shows which features have the greatest impact on predictions across all data.
-    - **SHAP Analysis**: Shows how each feature contributes to individual predictions using game theory principles.
-    - **Interactive Explanation**: Lets you explore how changing input values affects predictions.
-    
-    These tools help make the 'black box' of machine learning more transparent and understandable.
-    """)
+    # Add footer
+    st.markdown("""
+    <div class="footer">
+        <p>Explainable AI Dashboard | Developed for understanding accident severity predictions</p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">© 2025 Road Safety Analytics</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
