@@ -204,7 +204,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="main-header">🚀 Accident Severity Prediction</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header"> Accident Severity Prediction</h1>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="info-box">

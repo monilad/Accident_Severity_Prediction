@@ -1046,7 +1046,7 @@ def show_interactive_explanation(model, scaler):
         st.code(traceback.format_exc())
 
 def main():
-    st.markdown('<h1 class="main-header">🔍 Explainable AI for Accident Severity Prediction</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">Explainable AI for Accident Severity Prediction</h1>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
